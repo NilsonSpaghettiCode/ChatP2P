@@ -1,56 +1,81 @@
 #Imports
 import socket
-class Servidor_TCP():
+from src.model.serializador import deserializar_lista, serializar_lista
+class ServidorTCP():
     """
     Esta clase permite instanciar y manejar el servidor indexado
     """
-    direccion_servidor = None
-    lista_usuario = None
+    #direccion_servidor = None
+    #lista_usuario = []
 
     def __init__(self, direccion_servidor, lista_usuario):
         self.direccion_servidor = direccion_servidor
-        self.lista_usuario = lista_usuario
+        self.lista_usuario = list(lista_usuario)
     
     def esta_registrado(self, direccion_usuario):
         """
         Esta función verifica en la estructura de datos "", si la direccion ip ya se encuentra
         registrada.
         """
+        if len(self.lista_usuario) != 0: 
+            for usuario in self.lista_usuario:
+                if (usuario[1][0] == direccion_usuario[0]):
+                    return True
+
         return False
         
-    def registrar_usuario(self, nombre_usuario):
+    def registrar_usuario(self, nombre_usuario, direccion_usuario):
         """
         Esta funcion registra un usuario en la estructura de datos "".
         """
+        nombre_usuario = nombre_usuario.strip()
+
+        if nombre_usuario == "":
+            nombre_usuario = "default " + str(len(self.lista_usuario))
+        
+        self.lista_usuario.append((nombre_usuario, direccion_usuario))
+
         print(f"Usuario registrado: {nombre_usuario}")
+
+    def retornar_lista_usuario(self,lista_usuarios_serializada,conexion_usuario:socket.socket):
+        conexion_usuario.sendall(lista_usuarios_serializada)
 
     def iniciar_server(self):
         servidor_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         servidor_tcp.bind(self.direccion_servidor)
-        print("Servidor creado en: ",self.direccion_servidor)
+        print("Servidor creado en: ", self.direccion_servidor)
 
-        
         servidor_tcp.listen(5)
-        print("Esperando usuario.....")
-
-        conexion_usuario, direccion_usuario = servidor_tcp.accept()
-        print("Usuario conectado y aceptado en :",direccion_usuario)
-
-        if self.esta_registrado(direccion_usuario):
-            print("Retornando lista de usuarios")
-        else:
-            print("Registrando usuario")
-            print("Retornando lista del usuario")
+        
+        #
+        while True:
+            print("Esperando usuario.....")
+            conexion_usuario, direccion_usuario = servidor_tcp.accept()
             
-        conexion_usuario.close()
+            print("Usuario conectado y aceptado en :",direccion_usuario)
+            nombre_usuario = deserializar_lista(conexion_usuario.recv(1024))
 
-
-if __name__ == '__main__':
+            if self.esta_registrado(direccion_usuario):
+                print("Retornando lista de usuarios a una usuario registrado")
+                print(self.lista_usuario, conexion_usuario)
+                self.retornar_lista_usuario(serializar_lista(self.lista_usuario), conexion_usuario)
+            else:
+                self.registrar_usuario(nombre_usuario, direccion_usuario)
+                print("Registrando usuario")
+                print("Retornando lista de los usuarios a un usuario nuevo")
+                self.retornar_lista_usuario(serializar_lista(self.lista_usuario), conexion_usuario)
+            
+            conexion_usuario.close()
+            print('Usuarios->>>>>>>>>>>>')
+            print(self.lista_usuario)
+        
+            
+if __name__ == "__main__":
 
     lista_usuarios = []
 
-    direccion_servidor = ('localhost',8000)
-    servidor = Servidor_TCP(direccion_servidor,lista_usuarios)
+    direccion_servidor = ("localhost",8000)
+    servidor = ServidorTCP(direccion_servidor,lista_usuarios)
     servidor.iniciar_server()
 
 
