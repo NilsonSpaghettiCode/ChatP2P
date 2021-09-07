@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     lista_usuarios = []
 
-    direccion_servidor = ("localhost",8000)
+    direccion_servidor = ("172.19.0.3",8000)
     servidor = ServidorTCP(direccion_servidor,lista_usuarios)
     servidor.iniciar_server()
 
