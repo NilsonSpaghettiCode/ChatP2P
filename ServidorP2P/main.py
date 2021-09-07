@@ -1,4 +1,3 @@
-#Imports
 import socket
 from pickle import dumps, loads
 
@@ -41,6 +40,10 @@ class ServidorTCP():
     def retornar_lista_usuario(self,lista_usuarios_serializada,conexion_usuario:socket.socket):
         conexion_usuario.sendall(lista_usuarios_serializada)
 
+    @staticmethod
+    def getLocal_ip():
+        return str(socket.gethostbyname(socket.gethostname()))
+
     def iniciar_server(self):
         servidor_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         servidor_tcp.bind(self.direccion_servidor)
@@ -69,13 +72,12 @@ class ServidorTCP():
             conexion_usuario.close()
             print('<---- Usuarios en la lista ---->')
             print(self.lista_usuario)
-        
-            
+                  
 if __name__ == "__main__":
 
     lista_usuarios = []
 
-    direccion_servidor = ("172.19.0.3",8000)
+    direccion_servidor = (ServidorTCP.getLocal_ip(), 8000)
     servidor = ServidorTCP(direccion_servidor,lista_usuarios)
     servidor.iniciar_server()
 
