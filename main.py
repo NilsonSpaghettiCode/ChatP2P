@@ -1,6 +1,7 @@
 #Imports
 import socket
-from src.model.serializador import deserializar_lista, serializar_lista
+from pickle import dumps, loads
+
 class ServidorTCP():
     """
     Esta clase permite instanciar y manejar el servidor indexado
@@ -10,7 +11,7 @@ class ServidorTCP():
 
     def __init__(self, direccion_servidor, lista_usuario):
         self.direccion_servidor = direccion_servidor
-        self.lista_usuario = list(lista_usuario)
+        self.lista_usuario = lista_usuario
     
     def esta_registrado(self, direccion_usuario):
         """
@@ -53,20 +54,20 @@ class ServidorTCP():
             conexion_usuario, direccion_usuario = servidor_tcp.accept()
             
             print("Usuario conectado y aceptado en :",direccion_usuario)
-            nombre_usuario = deserializar_lista(conexion_usuario.recv(1024))
+            nombre_usuario = loads(conexion_usuario.recv(1024))
 
             if self.esta_registrado(direccion_usuario):
-                print("Retornando lista de usuarios a una usuario registrado")
-                print(self.lista_usuario, conexion_usuario)
-                self.retornar_lista_usuario(serializar_lista(self.lista_usuario), conexion_usuario)
+                print("Retornando lista de usuarios a un usuario registrado")
+                #print(self.lista_usuario, conexion_usuario)
+                self.retornar_lista_usuario(dumps(self.lista_usuario), conexion_usuario)
             else:
                 self.registrar_usuario(nombre_usuario, direccion_usuario)
                 print("Registrando usuario")
                 print("Retornando lista de los usuarios a un usuario nuevo")
-                self.retornar_lista_usuario(serializar_lista(self.lista_usuario), conexion_usuario)
+                self.retornar_lista_usuario(dumps(self.lista_usuario), conexion_usuario)
             
             conexion_usuario.close()
-            print('Usuarios->>>>>>>>>>>>')
+            print('<---- Usuarios en la lista ---->')
             print(self.lista_usuario)
         
             

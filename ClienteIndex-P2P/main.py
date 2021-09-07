@@ -8,7 +8,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_address = ('localhost', 8000)
 print('connecting to {} port {}'.format(*server_address))
 sock.connect(server_address)
-nombre_usuario = str(input('Introduce tasdu nombre de usuario: '))
+nombre_usuario = str(input('Introduce tu nombre de usuario: '))
 
 sock.sendall(serializar_objeto(nombre_usuario))
 try:
@@ -16,6 +16,6 @@ try:
     data = deserializar_objeto(inputX)
     print(data)
 except:
-    print(e)
+    print('Algo salio mal...')
 
 sock.close()
