@@ -5,7 +5,7 @@ from src.model.serializador import serializar_objeto, deserializar_objeto
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Connect the socket to the port where the server is listening
-server_address = ('172.19.0.3', 8000)
+server_address = ('192.168.1.4', 8000)
 print('connecting to {} port {}'.format(*server_address))
 sock.connect(server_address)
 nombre_usuario = str(input('Introduce tu nombre de usuario: '))
