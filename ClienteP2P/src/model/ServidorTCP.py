@@ -15,47 +15,83 @@ class HiloServidor(threading.Thread):
     def añadir_mensaje(self, usuario, mensaje):
         self.chats[usuario].append(mensaje)
 
-    def getTimeNow():
+    def getTimeNow(self):
         tiempo_actual = "["+str(datetime.now().strftime("%H:%M:%S"))+"]:"
         return tiempo_actual
         
     def buscar_usuario(self):
         for user in self.lista:
-            if user[0][1] == self.direccion:
+            #print("Comparacion: ",user[1][0])
+            #print("Direccion almacenada: ", self.direccion)
+            #print(user[0])
+            if user[1][0] == self.direccion[0]: #(Nombre, (ip, puerto))
                 self.nombre_usuario = user[0]
                 return True
                 #break
         else:
                 return False
 
+    def exterminar_conexion(self):
+        try:
+            self.conexion.sendall(dumps('1'))    
+            print("Confirmacion enviada de sesion")
+            self.conexion.close()
+        except:
+            print("error al enviar")
+            self.conexion.close()
+            print('Hilo cerrado')
+            
     def run(self):
         
-        print(f"\nNuevo cliente: {self.direccion[0]}")
+        #print(f"\nNuevo cliente: {self.direccion[0]}")
         
         while True:
             try:
-                data = self.conexion.recv(1024)
-
-                decode_data = loads(data)
-                print(f"{self.direccion[0]} > {decode_data}")
-                self.conexion.sendall(dumps(1))
-                
-                self.buscar_usuario(mensaje)
-                mensaje = f'{self.nombre_usuario} [{self.getTimeNow()}]: {decode_data}'
-                self.añadir_mensaje(self.nombre_usuario, mensaje)
-                print(self.chats[self.nombre_usuario])
+                data = loads(self.conexion.recv(1024))
+                #print('Nuevo mensaje!')
+                if data == '-1':
+                    print("Cerrar")
+                    self.exterminar_conexion()
+                    break
+                else:
+                    variable = self.buscar_usuario()
+                    #print("Usuario: ", variable)
+                    #print(self.chats)
+                    mensaje = f'{self.nombre_usuario} {self.getTimeNow()} {data}'
+                    #print("Mensaje a almacenar:", mensaje.strip())
+                    #print("Nombre User:",self.nombre_usuario)
+                    self.añadir_mensaje(self.nombre_usuario, mensaje)
+                    #print(self.chats[self.nombre_usuario])
+                    #print("Responder normal")
+                    
+                    try:
+                        self.conexion.sendall(dumps(data))
+                        #print("Confirmacion enviada")
+                         
+                    except:
+                        print("Error al enviar")
+                        self.conexion.close()
+                        print('Hilo cerrado')
+                        break
+                    
             except:
+                #print(f"{self.direccion[0]} > {decode_data}")
+                print("Error al recibir")
                 self.conexion.close()
                 print('Hilo cerrado')
                 break
-
 class ServidorTCP:
 
+    def __init__(self, chats, lista, esta_activo):
+        self.chats = chats
+        self.lista = lista
+        self.esta_activo = esta_activo
+    
     @staticmethod
     def getLocal_ip():
         return str(socket.gethostbyname(socket.gethostname()))
         
-    def iniciar(chats, lista):
+    def iniciar(self):
         hilos =[] #Esta lista contiene todos los hilos creados al conectase varios clientes
 
         socket_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,17 +101,20 @@ class ServidorTCP:
         socket_server.listen(5)
         print(direccion)
         
-        print("\nSocket establecido")
-        print("\nEsperando...")
+        print("\nSocket de escucha establecido")
+        #print("\nEsperando...")
         
-        while True:
+        while self.esta_activo:
+            #print("Activo #1")
             conexion_socket, direccion = socket_server.accept()
-            
+            #print("Activo #2")
             #Llamar funcion de hilos que compruebe si esta, si sí, lo deja pasar al usuario por IP, sino, lo agrega como ANONIMO
-            print(f"Cliente conectado || {direccion}")
-            hilo = HiloServidor(conexion_socket, direccion)
+            #print(f"Cliente conectado || {direccion}")
+            hilo = HiloServidor(conexion_socket, direccion, self.chats, self.lista)
             hilo.start()
             
-            print("Hilo para el nuevo cliente almacenado")
+            #print("Hilo para el nuevo cliente almacenado")
             hilos.append(hilo) #Se almacena una 
             hilo.join()
+            
+    

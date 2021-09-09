@@ -51,7 +51,7 @@ def entrada_opcion_de_chat():
     opcion_de_chat()
     return leer_entrada()
 
-def chat(cliente):
+def mostrar_chat_bienvenido(cliente):
     print(f"!Empiece a chatear con {cliente}!")
     print("Nota: si quiere salir del chat digite /exit")
 
@@ -62,3 +62,11 @@ def usuario_incorrecto():
     print("-"*30)
     print("El usuario que ingreso no esta registrado")
     print("-"*30)
+    
+def mostrar_chat_cliente(mensajes): #
+    for mensaje in mensajes:
+        print(mensaje)
+    print("-"*30)
+    
+    
+    

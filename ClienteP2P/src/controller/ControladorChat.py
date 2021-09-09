@@ -14,22 +14,28 @@ class ControladorChat:
     def escribir(self):
         while not self.conexion == None:
             entrada = InterfazChat.leer_entrada()
-            print(entrada)
-            if entrada.lower() == '/exit':
-                print('Usted ha cerrado la conexión...')
-                self.terminar_conexion()
+            #print("> Yo: ", entrada)
+            if entrada == "/exit":
+                print("Cerrando")
+                self.exterminar_conexion()
                 break
             else:
-                if self.enviar_mensaje(entrada):
-                    if not self.recibir_ACK():
-                        print("El mensaje no se recibio")
-                        self.terminar_conexion()
-                        break
-                else:
-                    print("El mensaje no se envio")
+                try:
+                    self.conexion.sendall(dumps(entrada))
+                    #print('Mensaje enviado con exito')
+                except:
                     self.conexion.close()
+                    print('Error al enviar')
                     break
-    
+                #try:
+                    #data = loads(self.conexion.recv(1024))
+                    #print("> El: ",data)
+
+                #except:
+                    #self.conexion.close()
+                    #print('Hilo cerrado')
+                    #break
+ 
     def conectarse_cliente(self):
         clienteTCP = ClienteTCP(self.contacto, (self.direccion_ip_cliente, self.puerto_cliente))
         self.conexion = clienteTCP.conexion_a_cliente()
@@ -46,19 +52,31 @@ class ControladorChat:
             return True
         except:
             return False
-        
-    def recibir_ACK(self):
-        try:
-            loads(self.conexion.recv(1024))
-            return True
-        except:
-            return False
     
-    def terminar_conexion(self):
-        #self.conexion.sendall(dumps(-1))
-        self.conexion.close()
+    def exterminar_conexion(self):
+        try:
+            self.conexion.sendall(dumps('-1'))
+            print('Mensaje enviado con exito')         
+        except:
+            self.conexion.close()
+            print('Hilo cerrado')
+            
+        try:
+            data = loads(self.conexion.recv(1024))
+            if data == '1':
+                self.conexion.close()
+                print("Conexion cerrada correctament")
+        except:
+            self.conexion.close()
+            print('Hilo cerrado')
+            
+    def generar_mensajes_de_chat(self):
+        mensajes = self.chat[self.contacto]
+        return mensajes       
     
     def iniciar_chat(self):
         self.retornar_direccion_cliente()
         self.conectarse_cliente()
+        InterfazChat.mostrar_chat_cliente(self.generar_mensajes_de_chat())
+        InterfazChat.mostrar_chat_bienvenido(self.contacto)
         self.escribir()

@@ -11,7 +11,7 @@ class ClienteTCP:
     def __init__(self, nombre, direccion_cliente:tuple):
         self.nombre = nombre
         self.direccion_cliente = direccion_cliente
-        self.direccion_index = ('192.168.56.1', 8000)
+        self.direccion_index = ('172.17.0.4', 8000)
         self.lista = []
     
     def cliente_socket_conexion(self):
