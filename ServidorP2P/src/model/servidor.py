@@ -1,5 +1,6 @@
 import socket
 from pickle import dumps, loads
+from ..view import interfazapp
 
 class ServidorTCP():
     """
@@ -35,7 +36,7 @@ class ServidorTCP():
         
         self.lista_usuario.append((nombre_usuario, direccion_usuario))
 
-        print(f"Usuario registrado: {nombre_usuario}")
+        interfazapp.log_usuario_registrado(nombre_usuario)
 
     def retornar_lista_usuario(self,lista_usuarios_serializada,conexion_usuario:socket.socket):
         conexion_usuario.sendall(lista_usuarios_serializada)
@@ -43,32 +44,34 @@ class ServidorTCP():
     @staticmethod
     def getLocal_ip():
         return str(socket.gethostbyname(socket.gethostname()))
+    
+    def get_lista(self):
+        return self.lista_usuario
 
     def iniciar_server(self):
         servidor_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         servidor_tcp.bind(self.direccion_servidor)
-        print("Servidor creado en: ", self.direccion_servidor)
+        interfazapp.log_creacion_servidor(self.direccion_servidor)
 
         servidor_tcp.listen(5)
         
         #
         while True:
-            print("Esperando usuario.....")
+            interfazapp.log_esperar_usuario()
             conexion_usuario, direccion_usuario = servidor_tcp.accept()
             
-            print("Usuario conectado y aceptado en :",direccion_usuario)
+            interfazapp.log_usuario_conectado(direccion_usuario)
             nombre_usuario = loads(conexion_usuario.recv(1024))
 
             if self.esta_registrado(direccion_usuario):
-                print("Retornando lista de usuarios a un usuario registrado")
+                interfazapp.log_retornar_lista_registrado()
                 #print(self.lista_usuario, conexion_usuario)
                 self.retornar_lista_usuario(dumps(self.lista_usuario), conexion_usuario)
             else:
+                interfazapp.log_registrar_usuario()
                 self.registrar_usuario(nombre_usuario, direccion_usuario)
-                print("Registrando usuario")
-                print("Retornando lista de los usuarios a un usuario nuevo")
+                interfazapp.log_retornar_lista_nuevo()
                 self.retornar_lista_usuario(dumps(self.lista_usuario), conexion_usuario)
             
             conexion_usuario.close()
-            print('<---- Usuarios en la lista ---->')
-            print(self.lista_usuario)
+            interfazapp.log_usuarios_lista(self.lista_usuario)
