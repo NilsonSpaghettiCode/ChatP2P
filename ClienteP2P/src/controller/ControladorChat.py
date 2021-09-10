@@ -1,4 +1,4 @@
-from pickle import dumps, loads
+from pickle import NONE, dumps, loads
 from ..model.ClienteTCP import ClienteTCP
 from ..view import InterfazChat
 
@@ -37,7 +37,7 @@ class ControladorChat:
                     #break
  
     def conectarse_cliente(self):
-        clienteTCP = ClienteTCP(self.contacto, (self.direccion_ip_cliente, self.puerto_cliente))
+        clienteTCP = ClienteTCP(self.contacto, (self.direccion_ip_cliente, self.puerto_cliente),NONE)
         self.conexion = clienteTCP.conexion_a_cliente()
         
     def retornar_direccion_cliente(self):

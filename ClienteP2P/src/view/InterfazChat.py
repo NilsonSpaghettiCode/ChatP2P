@@ -67,6 +67,7 @@ def mostrar_chat_cliente(mensajes): #
     for mensaje in mensajes:
         print(mensaje)
     print("-"*30)
+
     
     
     

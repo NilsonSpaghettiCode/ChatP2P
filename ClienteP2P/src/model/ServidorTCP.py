@@ -99,7 +99,7 @@ class ServidorTCP:
 
         socket_server.bind(direccion)
         socket_server.listen(5)
-        print(direccion)
+        #print(direccion)
         
         print("\nSocket de escucha establecido")
         #print("\nEsperando...")
